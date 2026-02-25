@@ -97,4 +97,20 @@ const poblarCategoria = async (request, response) => {
     }
  }
 
-module.exports = { poblarProductos, poblarCategoria, buscarNombre, buscarCategoria};
+const listarProductos = async (request, response) => {
+    try {
+        const query = `
+            SELECT p.*, c.nombre AS categoria
+            FROM productos p
+            LEFT JOIN categoria c ON p.categoria_id = c.id
+            ORDER BY p.id
+        `;
+        const result = await pool.query(query);
+        response.status(200).json(result.rows);
+    } catch (error) {
+        console.log(`Error listarProductos: ${error}`);
+        response.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { poblarProductos, poblarCategoria, buscarNombre, buscarCategoria, listarProductos };
