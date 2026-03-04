@@ -96,7 +96,26 @@ const poblarCategoria = async (request, response) => {
             response.status(500).json({ error: error.message });
     }
  }
-
+const cargarProductos = async(request, response) => {
+    // extraer categoria_id si se envía, sino null
+    const {nombre, precio, stock, descripcion, imagen_url, categoria_id} = request.body;
+    try{
+        // nombre, precio y stock siguen siendo obligatorios
+        if(!nombre || !precio || !stock){
+            return response.status(400).json({ error: "Faltan campos obligatorios" });
+        }
+        const query = `
+            INSERT INTO productos (nombre, precio, stock, descripcion, imagen_url, categoria_id)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `;
+        await pool.query(query, [nombre, precio, stock, descripcion, imagen_url, categoria_id || null]);
+        response.status(200).json({ message: "Producto cargado exitosamente" });
+    }
+    catch(error){
+        console.error("Error cargarProductos:", error);
+        response.status(500).json({ error: "Error al cargar productos" });
+    }
+}
 const listarProductos = async (request, response) => {
     try {
         const query = `
@@ -113,4 +132,4 @@ const listarProductos = async (request, response) => {
     }
 };
 
-module.exports = { poblarProductos, poblarCategoria, buscarNombre, buscarCategoria, listarProductos };
+module.exports = { poblarProductos, poblarCategoria, buscarNombre, buscarCategoria, listarProductos, cargarProductos };

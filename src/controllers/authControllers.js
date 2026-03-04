@@ -3,34 +3,40 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 
-const login = async(req,res)=>{
- const{email,password}=req.params;
- try{
+const login = async (req, res) => {
+    // read credentials from request body
+    const { email, password } = req.body;
+    try {
+        // fetch user by email using parameterized query
+        const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ msg: "credenciales invalidas (Email)" });
+        }
+        const usuario = result.rows[0];
+        const isMatch = await bcrypt.compare(password, usuario.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: "credenciales invalidas (Password)" });
+        }
+        const payload = {
+            id: usuario.id,
+            rol: usuario.rol,
+            email: usuario.email,
+        };
+        // make sure we have a secret configured
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            console.error('JWT_SECRET no está definido en las variables de entorno');
+            return res.status(500).json({ msg: 'Error en el servidor', error: 'JWT_SECRET no configurado' });
+        }
 
-    const result = await pool.query('Select * from usuarios where email = $1');
-    if (result.rows.length===0){
-        return res.status(400).json({msg:"credenciales invalidas(Email)"})
-    }
-    const usuario = result.rows[0];
-    const isMatch = await bcrypt.compare(password,usuario.password);
-    if(!isMatch){
-        return res.status(400).json({msg:"credenciales invalidas(Password)"})
-    }
-    const Payload = {
-        id:usuario.id,
-        rol:usuario.rol,
-        email:usuario.email
-    };
-    const token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        {expiresIn:'1h'}
-    );
- }
- catch{
+        const token = jwt.sign(payload, secret, { expiresIn: '1h' });
 
- }
-}
+        return res.json({ token });
+    } catch (error) {
+        console.error('Error en login:', error);
+        return res.status(500).json({ msg: 'Error en el servidor', error: error.message });
+    }
+};
 const register = async(req,res)=>{
     const{email,password}=req.body;
     try{
