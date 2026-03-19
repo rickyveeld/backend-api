@@ -11,5 +11,4 @@ const pool = new Pool({
 
 pool.on('connect', () => console.log('Conexion exitosa'));
 
-
 module.exports = pool;

@@ -9,7 +9,7 @@ const poblarProductos = async (request, response) => {
         let inserciones = 0;
         // Destructurar el objeto
         for(const product of products){
-            const { title, price, description, image,category} = product;
+            const { title, price, description, image,category,youtube_id} = product;
 
             const stock = Math.floor(Math.random() * 50) + 1;
             const categoriaQuery = 'SELECT id FROM categoria WHERE nombre = $1';
@@ -17,11 +17,11 @@ const poblarProductos = async (request, response) => {
             const categoria_id = categoriaResult.rows[0]?.id;
             const query = `
                 INSERT INTO productos
-                (nombre, precio, stock, descripcion, imagen_url,categoria_id)
+                (nombre, precio, stock, descripcion, imagen_url,categoria_id,youtube_id)
                 VALUES ($1, $2, $3, $4, $5,$6)
             `
 
-            await pool.query(query, [title, price, stock, description, image,categoria_id]);
+            await pool.query(query, [title, price, stock, description, image,categoria_id,youtube_id]);
 
             inserciones++;
         }

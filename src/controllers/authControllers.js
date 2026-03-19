@@ -7,6 +7,7 @@ const login = async (req, res) => {
     // read credentials from request body
     const { email, password } = req.body;
     try {
+
         // fetch user by email using parameterized query
         const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
         if (result.rows.length === 0) {
@@ -22,7 +23,7 @@ const login = async (req, res) => {
             rol: usuario.rol,
             email: usuario.email,
         };
-        // make sure we have a secret configured
+
         const secret = process.env.JWT_SECRET;
         if (!secret) {
             console.error('JWT_SECRET no está definido en las variables de entorno');
